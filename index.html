@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Better call Jamie!</title>
+<style>
+  :root {
+    --bg: #07080d;
+    --fg: #f2f3f7;
+    --muted: #8a8fa3;
+    --line: rgba(255,255,255,.08);
+    --accent1: #7c5cff;
+    --accent2: #22d3ee;
+    --accent3: #f472b6;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", "Microsoft YaHei", sans-serif;
+    overflow-x: hidden;
+  }
+  canvas#bg { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; }
+
+  /* 大色块光晕 */
+  .glow {
+    position: fixed; width: 60vmax; height: 60vmax; border-radius: 50%;
+    filter: blur(90px); opacity: .35; z-index: 0; pointer-events: none;
+    animation: drift 18s ease-in-out infinite alternate;
+  }
+  .glow.a { background: var(--accent1); top: -20vmax; left: -15vmax; }
+  .glow.b { background: var(--accent2); bottom: -25vmax; right: -15vmax; animation-delay: -6s; opacity: .22; }
+  .glow.c { background: var(--accent3); top: 30%; left: 45%; width: 35vmax; height: 35vmax; animation-delay: -12s; opacity: .15; }
+  @keyframes drift {
+    0%   { transform: translate(0,0) scale(1); }
+    50%  { transform: translate(8vmax,6vmax) scale(1.15); }
+    100% { transform: translate(-6vmax,10vmax) scale(.9); }
+  }
+
+  main { position: relative; z-index: 1; min-height: 100vh; display: flex; flex-direction: column; }
+
+  .hero {
+    flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; padding: 18vh 16px 6vh;
+  }
+  .title {
+    font-size: clamp(44px, 9vw, 128px); font-weight: 900; font-style: italic;
+    letter-spacing: -.035em; line-height: 1; transform: skewX(-6deg);
+    display: flex; flex-wrap: wrap; justify-content: center; column-gap: .1em;
+    max-width: 100%; padding: .05em .1em;
+  }
+  .title .w { display: inline-flex; white-space: nowrap; overflow: hidden; padding: 0 .08em .06em; }
+  .title .w span {
+    display: inline-block;
+    background: linear-gradient(120deg, #fff 0%, #c9c2ff 25%, var(--accent2) 45%, var(--accent3) 65%, #c9c2ff 82%, #fff 100%);
+    background-size: 300% 100%;
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    transform: translateY(110%) rotate(8deg); opacity: 0;
+    animation: rise 1s cubic-bezier(.2,.9,.2,1.05) forwards, shine 6s linear infinite;
+  }
+  @keyframes rise { to { transform: none; opacity: 1; } }
+  @keyframes shine { to { background-position: -300% 0; } }
+
+  .sub {
+    margin-top: 22px; color: var(--muted); font-size: clamp(14px, 2.2vw, 18px); letter-spacing: .3em;
+    opacity: 0; animation: fadeUp .9s ease forwards; animation-delay: 1s;
+  }
+  .scroll-hint {
+    margin-top: 8vh; width: 22px; height: 36px; border: 2px solid rgba(255,255,255,.25); border-radius: 12px;
+    position: relative; opacity: 0; animation: fadeUp .8s ease forwards 1.6s;
+  }
+  .scroll-hint::after {
+    content: ""; position: absolute; left: 50%; top: 7px; width: 4px; height: 8px; margin-left: -2px;
+    background: #fff; border-radius: 2px; animation: wheel 1.6s ease-in-out infinite;
+  }
+  @keyframes wheel { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(12px); opacity: 0; } }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+
+  .grid {
+    width: min(1080px, 100%); margin: 0 auto; padding: 0 16px 12vh;
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px;
+  }
+  .card {
+    position: relative; display: block; text-decoration: none; color: inherit;
+    padding: 28px 24px 26px; border-radius: 20px; min-height: 190px;
+    background: rgba(255,255,255,.035); border: 1px solid var(--line);
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    overflow: hidden; transition: transform .35s ease, border-color .35s ease, background .35s ease;
+    opacity: 0; transform: translateY(40px);
+  }
+  .card.in { opacity: 1; transform: none; transition: opacity .8s ease, transform .8s cubic-bezier(.2,.9,.2,1), border-color .35s, background .35s; }
+  .card::before { /* 跟随鼠标的高光 */
+    content: ""; position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity .3s;
+    background: radial-gradient(380px circle at var(--mx,50%) var(--my,50%), rgba(124,92,255,.25), transparent 60%);
+  }
+  .card:hover::before { opacity: 1; }
+  .card.live:hover { border-color: rgba(124,92,255,.55); background: rgba(255,255,255,.06); }
+  .card .no { font-size: 12px; color: var(--muted); letter-spacing: .2em; }
+  .card h2 { margin-top: 44px; font-size: 28px; font-weight: 800; }
+  .card p { margin-top: 8px; color: var(--muted); font-size: 14px; line-height: 1.6; }
+  .card .arrow {
+    position: absolute; top: 24px; right: 22px; font-size: 20px; transition: transform .35s ease;
+  }
+  .card.live:hover .arrow { transform: translate(4px,-4px); }
+  .card.soon { cursor: default; }
+  .card.soon h2, .card.soon .arrow { opacity: .35; }
+  .badge {
+    display: inline-block; margin-left: 8px; padding: 2px 8px; border-radius: 99px; font-size: 11px;
+    letter-spacing: .1em; vertical-align: middle; border: 1px solid var(--line); color: var(--muted);
+  }
+  .badge.on { color: #b8f5c8; border-color: rgba(74,222,128,.35); }
+  .badge.on::before {
+    content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #4ade80;
+    margin-right: 6px; vertical-align: 1px; animation: pulse 1.8s ease-in-out infinite;
+  }
+  @keyframes pulse { 50% { box-shadow: 0 0 0 5px rgba(74,222,128,0); opacity: .5; } }
+
+  footer { position: relative; z-index: 1; text-align: center; color: var(--muted); font-size: 12px; padding: 0 16px 32px; letter-spacing: .1em; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+    .title .w span, .sub, .scroll-hint, .card { opacity: 1 !important; transform: none !important; }
+  }
+</style>
+</head>
+<body>
+<canvas id="bg"></canvas>
+<div class="glow a"></div><div class="glow b"></div><div class="glow c"></div>
+
+<main>
+  <section class="hero">
+    <h1 class="title" aria-label="Better call Jamie!"></h1>
+    <div class="sub">有事找我 · 没事看看博客</div>
+    <div class="scroll-hint" aria-hidden="true"></div>
+  </section>
+
+  <section class="grid">
+    <a class="card live" href="https://blog.qzmer.me">
+      <div class="no">01 · BLOG <span class="badge on">在线</span></div>
+      <span class="arrow">↗</span>
+      <h2>博客</h2>
+      <p>玩意 —— 技术笔记、折腾记录和随手写的东西。</p>
+    </a>
+    <div class="card soon">
+      <div class="no">02 · LAB <span class="badge">筹备中</span></div>
+      <span class="arrow">↗</span>
+      <h2>实验室</h2>
+      <p>小工具和小实验，敬请期待。</p>
+    </div>
+    <div class="card soon">
+      <div class="no">03 · ABOUT <span class="badge">筹备中</span></div>
+      <span class="arrow">↗</span>
+      <h2>关于</h2>
+      <p>我是谁，在做什么。</p>
+    </div>
+  </section>
+
+  <footer>© <span id="y"></span> Jamie</footer>
+</main>
+
+<script>
+  document.getElementById('y').textContent = new Date().getFullYear();
+
+  // 标题按词分组（窄屏按词换行），再逐字拆开做入场动画
+  const titleEl = document.querySelector('.title');
+  titleEl.getAttribute('aria-label').split(' ').forEach(word => {
+    const w = document.createElement('span');
+    w.className = 'w'; w.setAttribute('aria-hidden', 'true');
+    [...word].forEach(ch => {
+      const s = document.createElement('span');
+      s.textContent = ch;
+      w.appendChild(s);
+    });
+    titleEl.appendChild(w);
+  });
+
+  // 标题逐字延迟
+  document.querySelectorAll('.title .w span').forEach((s, i) => {
+    s.style.animationDelay = (0.15 + i * 0.05) + 's, 0s';
+  });
+
+  // 卡片滚动入场
+  const io = new IntersectionObserver(es => es.forEach(e => {
+    if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+  }), { threshold: .15 });
+  document.querySelectorAll('.card').forEach((c, i) => { c.style.transitionDelay = (i * 0.12) + 's'; io.observe(c); });
+  document.querySelectorAll('.card').forEach(c => c.addEventListener('pointermove', e => {
+    const r = c.getBoundingClientRect();
+    c.style.setProperty('--mx', (e.clientX - r.left) + 'px');
+    c.style.setProperty('--my', (e.clientY - r.top) + 'px');
+  }));
+
+  // 背景：粒子连线，鼠标会把粒子推开
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const cv = document.getElementById('bg'), ctx = cv.getContext('2d');
+  let W, H, dpr, pts = [], mouse = { x: -1e4, y: -1e4 };
+  function resize() {
+    dpr = Math.min(devicePixelRatio || 1, 2);
+    W = innerWidth; H = innerHeight;
+    cv.width = W * dpr; cv.height = H * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const n = Math.round(Math.min(140, W * H / 11000));
+    pts = Array.from({ length: n }, () => ({
+      x: Math.random() * W, y: Math.random() * H,
+      vx: (Math.random() - .5) * .35, vy: (Math.random() - .5) * .35,
+      r: Math.random() * 1.6 + .4
+    }));
+  }
+  addEventListener('resize', resize);
+  addEventListener('pointermove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
+  addEventListener('pointerleave', () => { mouse.x = mouse.y = -1e4; });
+  resize();
+
+  function frame() {
+    ctx.clearRect(0, 0, W, H);
+    const L = 130;
+    for (const p of pts) {
+      const dx = p.x - mouse.x, dy = p.y - mouse.y, d2 = dx * dx + dy * dy;
+      if (d2 < 22500) { const f = (22500 - d2) / 22500 * .6; const d = Math.sqrt(d2) || 1; p.vx += dx / d * f; p.vy += dy / d * f; }
+      p.vx *= .97; p.vy *= .97;
+      p.vx += (Math.random() - .5) * .02; p.vy += (Math.random() - .5) * .02;
+      p.x += p.vx; p.y += p.vy;
+      if (p.x < 0) p.x += W; if (p.x > W) p.x -= W;
+      if (p.y < 0) p.y += H; if (p.y > H) p.y -= H;
+    }
+    for (let i = 0; i < pts.length; i++) {
+      const a = pts[i];
+      for (let j = i + 1; j < pts.length; j++) {
+        const b = pts[j], dx = a.x - b.x, dy = a.y - b.y, d = Math.hypot(dx, dy);
+        if (d < L) {
+          ctx.strokeStyle = `rgba(160,150,255,${(1 - d / L) * .22})`;
+          ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+        }
+      }
+      ctx.fillStyle = 'rgba(220,225,255,.8)';
+      ctx.beginPath(); ctx.arc(a.x, a.y, a.r, 0, 6.283); ctx.fill();
+    }
+    if (!reduce) requestAnimationFrame(frame);
+  }
+  frame();
+</script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "cleanUrls": true,
+  "redirects": [
+    {
+      "source": "/:path((?!index\\.html$).+)",
+      "destination": "https://blog.qzmer.me/:path",
+      "statusCode": 301
+    }
+  ]
+}
