@@ -3,7 +3,7 @@
   "cleanUrls": true,
   "redirects": [
     {
-      "source": "/:path((?!index\\.html$).+)",
+      "source": "/:path((?!index\\.html$|favicon\\.ico$|icon\\.svg$|apple-touch-icon\\.png$).+)",
       "destination": "https://blog.qzmer.me/:path",
       "statusCode": 301
     }
