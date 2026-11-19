@@ -107,6 +107,7 @@
     position: absolute; top: 24px; right: 22px; font-size: 20px; transition: transform .35s ease;
   }
   .card.live:hover .arrow { transform: translate(4px,-4px); }
+  .card.archive h2 { opacity: .7; }
   .card.soon { cursor: default; }
   .card.soon h2, .card.soon .arrow { opacity: .35; }
   .badge {
@@ -135,25 +136,31 @@
 <main>
   <section class="hero">
     <h1 class="title" aria-label="Better call Jamie!"></h1>
-    <div class="sub">有事找我 · 没事看看博客</div>
+    <div class="sub">有事找我 · 没事听我说说</div>
     <div class="scroll-hint" aria-hidden="true"></div>
   </section>
 
   <section class="grid">
-    <a class="card live" href="https://blog.qzmer.me">
-      <div class="no">01 · BLOG <span class="badge on">在线</span></div>
+    <a class="card live" href="https://say.qzmer.me">
+      <div class="no">01 · SAY <span class="badge on">在线</span></div>
       <span class="arrow">↗</span>
-      <h2>博客</h2>
-      <p>玩意 —— 技术笔记、折腾记录和随手写的东西。</p>
+      <h2>他说</h2>
+      <p>想说的话都在这儿 —— 一句话的瞬间，也有长一点的文章。</p>
+    </a>
+    <a class="card live archive" href="https://blog.qzmer.me">
+      <div class="no">02 · BLOG <span class="badge">存档</span></div>
+      <span class="arrow">↗</span>
+      <h2>玩意</h2>
+      <p>以前的技术笔记和折腾记录，不再更新，原样留着。</p>
     </a>
     <div class="card soon">
-      <div class="no">02 · LAB <span class="badge">筹备中</span></div>
+      <div class="no">03 · LAB <span class="badge">筹备中</span></div>
       <span class="arrow">↗</span>
       <h2>实验室</h2>
       <p>小工具和小实验，敬请期待。</p>
     </div>
     <div class="card soon">
-      <div class="no">03 · ABOUT <span class="badge">筹备中</span></div>
+      <div class="no">04 · ABOUT <span class="badge">筹备中</span></div>
       <span class="arrow">↗</span>
       <h2>关于</h2>
       <p>我是谁，在做什么。</p>

@@ -2,7 +2,7 @@
 
 [www.qzmer.me](https://www.qzmer.me) 的主页 —— Better call Jamie!
 
-一个纯静态页面（`index.html`），没有构建步骤，部署在 Vercel。博客在 [blog.qzmer.me](https://blog.qzmer.me)。
+一个纯静态页面（`index.html`），没有构建步骤，部署在 Vercel。链到「他说」[say.qzmer.me](https://say.qzmer.me)（主）和「玩意」[blog.qzmer.me](https://blog.qzmer.me)（存档）。
 
 ## 本地预览
 
